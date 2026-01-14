@@ -9,42 +9,47 @@ class CashRegister:
         self.items = []
         self.previous_transactions = []
 
-    def add_item(self, item, price, quantity):
-        # Add to total
+    def add_item(self, item, price, quantity=1):
+        # Increase total
         self.total += price * quantity
 
-        # Add item to items list
-        self.items.append(item)
+        # Add items, including multiples
+        for _ in range(quantity):
+            self.items.append(item)
 
         # Record transaction
-        self.previous_transactions.append({
-            "item": item,
-            "price": price,
-            "quantity": quantity
-        })
+        self.previous_transactions.append(
+            {"item": item, "price": price, "quantity": quantity}
+        )
 
     def apply_discount(self):
-        # Spec: If no transactions print message
-        if len(self.previous_transactions) == 0:
+        if self.discount == 0:
             print("There is no discount to apply.")
-            return self.total
+            return
 
-        # Apply percentage discount
-        self.total = self.total - (self.total * (self.discount / 100))
-        return self.total
+        self.total -= self.total * (self.discount / 100)
+
+        # Format exactly as tests expect
+        if float(self.total).is_integer():
+            total_str = str(int(self.total))
+        else:
+            total_str = f"{self.total:.2f}"
+
+        print(f"After the discount, the total comes to ${total_str}.")
 
     def void_last_transaction(self):
-        if len(self.previous_transactions) == 0:
+        if not self.previous_transactions:
             return
 
         last = self.previous_transactions.pop()
 
-        # Subtract last transaction from total
+        # Subtract from total
         self.total -= last["price"] * last["quantity"]
 
-        # Remove matching item
-        for i in range(len(self.items) - 1, -1, -1):
-            if self.items[i] == last["item"]:
-                self.items.pop(i)
-                break
+        # Remove items (including multiples)
+        for _ in range(last["quantity"]):
+            for i in range(len(self.items) - 1, -1, -1):
+                if self.items[i] == last["item"]:
+                    self.items.pop(i)
+                    break
  
